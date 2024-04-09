@@ -1,0 +1,43 @@
+from data_preprocessing import DataPreprocessing
+from face_recognizer import FaceRecognizer
+
+
+def main():
+    # Inicjalizacja klas
+    data_prep = DataPreprocessing()
+    num_classes = data_prep.num_classes
+    print("Number of classes found: {}\n".format(num_classes))
+
+    face_recognizer = FaceRecognizer(num_classes=num_classes)
+
+    # Przygotowanie zdjec do trenowania
+    print("Preprocessing images and detecting faces...")
+    data_prep.crop_faces()
+
+    # Wczytanie danych
+    print("Loading training and validation data...")
+    train_data = data_prep.get_train_data()
+    val_data = data_prep.get_validation_data()
+
+    # Trenowanie modelu
+    print("Training the model...")
+    history = face_recognizer.train(train_data=train_data, val_data=val_data, epochs=10)
+
+    # Podsumowanie pracy modelu
+    print("Training completed. Model performance:")
+    print(f"Accuracy: {history.history['accuracy'][-1]}, Loss: {history.history['loss'][-1]}")
+
+    # Test
+    test_image_path = './test.jpg'
+    test_img_preprocessed = data_prep.preprocess_image(test_image_path)
+    prediction_index = face_recognizer.predict(test_img_preprocessed)
+    predicted_class_name = face_recognizer.get_class_name(prediction_index)
+    print(f"Predicted class name: {predicted_class_name}")
+
+
+    # TO DO:
+    # Dodac testy
+
+
+if __name__ == '__main__':
+    main()
