@@ -22,7 +22,7 @@ class FaceRecognizer:
             Dropout(0.5),
             Dense(num_classes, activation='softmax')
         ])
-        model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
         return model
 
     def train(self, train_data, val_data, epochs=10):
