@@ -41,14 +41,6 @@ class FaceRecognizer:
         return history
 
     def predict(self, preprocessed_image):
-        """Predicts the class of a preprocessed image.
-
-        Args:
-            preprocessed_image (numpy.ndarray): Preprocessed image ready for model input.
-
-        Returns:
-            int: The predicted class index, indicating the most likely class the image belongs to.
-        """
         prediction = self.model.predict(preprocessed_image)
         return np.argmax(prediction, axis=1)
 

@@ -53,18 +53,10 @@ class DataPreprocessing:
         return self.load_data('validation')
 
     def preprocess_image(self, image_path):
-        """Preprocess an image to make it model-ready.
-
-        Args:
-            image_path (str): Path to the image file.
-
-        Returns:
-            numpy.ndarray: The preprocessed image data array.
-        """
         img = load_img(image_path, target_size=self.image_size)
         img_array = img_to_array(img)
-        img_array = np.expand_dims(img_array, axis=0)  # Reshape to (1, height, width, channels)
-        img_array /= 255.0  # Normalize the image
+        img_array = np.expand_dims(img_array, axis=0)  # reshaping to (1, height, width, channels)
+        img_array /= 255.0  # normalization
         return img_array
 
     def crop_faces(self):
@@ -79,12 +71,12 @@ class DataPreprocessing:
                     print(f"Failed to load image. Skipping: {image_path}")
                     continue
 
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB for face_recognition
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # convert to rgb for face_recognition lib // not sure if needed?
                 face = self.detect_faces(image)
                 if face:
                     top, right, bottom, left = face
                     face_image = image[top:bottom, left:right]
-                    face_image = cv2.cvtColor(face_image, cv2.COLOR_RGB2BGR)  # Convert to BGR for OpenCV
+                    face_image = cv2.cvtColor(face_image, cv2.COLOR_RGB2BGR)  # convert to bgr for opencv lib
                     timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
                     face_file_path = os.path.join(output_folder, f"face_{timestamp}.jpg")
                     cv2.imwrite(face_file_path, face_image)
