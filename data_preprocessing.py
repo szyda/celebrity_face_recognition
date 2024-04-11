@@ -1,6 +1,6 @@
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 import face_recognition
-import os, cv2
+import os, cv2, numpy as np
 from datetime import datetime
 
 class DataPreprocessing:
@@ -31,9 +31,11 @@ class DataPreprocessing:
         return data_gen
 
     def load_data(self, subset):
+        data_path = os.path.join(self.data_directory, "processed")
         datagen = self.initialize_datagen(augment=(subset == 'training'))
+
         return datagen.flow_from_directory(
-            self.data_directory,
+            data_path,
             target_size=self.image_size,
             batch_size=self.batch_size,
             class_mode='categorical',
@@ -44,6 +46,7 @@ class DataPreprocessing:
         classes = [d for d in os.listdir(self.data_directory) if os.path.isdir(os.path.join(self.data_directory, d))]
         classes.sort()
         class_indices = {cls: idx for idx, cls in enumerate(classes)}
+
         return len(classes), class_indices
 
     def get_train_data(self):
@@ -52,33 +55,35 @@ class DataPreprocessing:
     def get_validation_data(self):
         return self.load_data('validation')
 
-    def preprocess_image(self, image_path):
-        img = load_img(image_path, target_size=self.image_size)
-        img_array = img_to_array(img)
-        img_array = np.expand_dims(img_array, axis=0)  # reshaping to (1, height, width, channels)
-        img_array /= 255.0  # normalization
-        return img_array
-
     def crop_faces(self):
+        output_base_folder = os.path.join(self.data_directory, "processed")
+        os.makedirs(output_base_folder, exist_ok=True)
+
         for subdir, dirs, files in os.walk(self.data_directory):
-            output_folder = os.path.join(subdir, "processed")
+            if subdir.endswith("processed") or "processed" in subdir:
+                continue
+
+            celebrity_name = os.path.basename(subdir)
+            output_folder = os.path.join(output_base_folder, celebrity_name)
             os.makedirs(output_folder, exist_ok=True)
 
             for file in files:
+                if not file.lower().endswith(('.png', '.jpg', '.jpeg')):
+                    continue
+
                 image_path = os.path.join(subdir, file)
                 image = cv2.imread(image_path)
                 if image is None:
                     print(f"Failed to load image. Skipping: {image_path}")
                     continue
 
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # convert to rgb for face_recognition lib // not sure if needed?
-                face = self.detect_faces(image)
-                if face:
-                    top, right, bottom, left = face
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                faces = face_recognition.face_locations(image)
+                for i, (top, right, bottom, left) in enumerate(faces):
                     face_image = image[top:bottom, left:right]
-                    face_image = cv2.cvtColor(face_image, cv2.COLOR_RGB2BGR)  # convert to bgr for opencv lib
+                    face_image = cv2.cvtColor(face_image, cv2.COLOR_RGB2BGR)
                     timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
-                    face_file_path = os.path.join(output_folder, f"face_{timestamp}.jpg")
+                    face_file_path = os.path.join(output_folder, f"img_{timestamp}.jpg")
                     cv2.imwrite(face_file_path, face_image)
 
     def detect_faces(self, image):
@@ -86,3 +91,11 @@ class DataPreprocessing:
         if face_locations:
             return face_locations[0]
         return None
+
+    # for testing
+    def preprocess_image(self, image_path):
+        img = load_img(image_path, target_size=self.image_size)
+        img_array = img_to_array(img)
+        img_array = np.expand_dims(img_array, axis=0)  # reshaping to (1, height, width, channels)
+        img_array /= 255.0  # normalization
+        return img_array

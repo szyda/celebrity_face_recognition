@@ -1,3 +1,4 @@
+import os
 from data_preprocessing import DataPreprocessing
 from face_recognizer import FaceRecognizer
 
@@ -5,14 +6,18 @@ from face_recognizer import FaceRecognizer
 def main():
     # Inicjalizacja klas
     data_prep = DataPreprocessing()
-    num_classes = data_prep.num_classes
+    num_classes = data_prep.num_classes - 1
+    class_indices = data_prep.class_indices
     print("Number of classes found: {}\n".format(num_classes))
 
-    face_recognizer = FaceRecognizer(num_classes=num_classes)
+    face_recognizer = FaceRecognizer(num_classes=num_classes, class_indices=class_indices)
 
-    # Przygotowanie zdjec do trenowania
-    print("Preprocessing images and detecting faces...")
-    data_prep.crop_faces()
+    # Przygotowanie zdjec do trenowania - ominac jesli juz istnieja
+    if not os.path.isdir("./data/processed"):
+        print("Preprocessing images and detecting faces...")
+        data_prep.crop_faces()
+    else:
+        print("Skipping preprocessing images")
 
     # Wczytanie danych
     print("Loading training and validation data...")
@@ -21,11 +26,11 @@ def main():
 
     # Trenowanie modelu
     print("Training the model...")
-    history = face_recognizer.train(train_data=train_data, val_data=val_data, epochs=10)
+    history = face_recognizer.train(train_data=train_data, val_data=val_data, epochs=20)
 
     # Podsumowanie pracy modelu
     print("Training completed. Model performance:")
-    print(f"Accuracy: {history.history['accuracy'][-1]}, Loss: {history.history['loss'][-1]}")
+    print(f"Accuracy: {history.history['accuracy'][-1]},\nLoss: {history.history['loss'][-1]}")
 
     # Test
     test_image_path = './test.jpg'
