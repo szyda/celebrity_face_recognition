@@ -6,9 +6,10 @@ from face_recognizer import FaceRecognizer
 def main():
     # Inicjalizacja klas
     data_prep = DataPreprocessing()
-    num_classes = data_prep.num_classes - 1
+    num_classes = data_prep.num_classes
     class_indices = data_prep.class_indices
     print("Number of classes found: {}\n".format(num_classes))
+    print("Classes found:")
 
     face_recognizer = FaceRecognizer(num_classes=num_classes, class_indices=class_indices)
 
@@ -35,8 +36,9 @@ def main():
     # Test
     test_image_path = './test.jpg'
     test_img_preprocessed = data_prep.preprocess_image(test_image_path)
-    prediction_index = face_recognizer.predict(test_img_preprocessed)
-    predicted_class_name = face_recognizer.get_class_name(prediction_index)
+    prediction_index = FaceRecognizer.predict(test_img_preprocessed)
+    print("Prediction index: ",prediction_index)
+    predicted_class_name = FaceRecognizer.get_class_name(prediction_index)
     print(f"Predicted class name: {predicted_class_name}")
 
 

@@ -18,17 +18,20 @@ class FaceRecognizer:
     def build_model(self, input_shape, num_classes):
         base_model = ResNet50(weights='imagenet', include_top=False, input_shape=input_shape)
 
+        for layer in base_model.layers:
+            layer.trainable = False
+
         model = Sequential([
             base_model,
             Flatten(),
-            Dense(128, activation='relu'),
-            Dropout(0.5),
+            Dense(256, activation='relu'),
+            Dropout(0.2),
             Dense(num_classes, activation='softmax')
         ])
         model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
         return model
 
-    def train(self, train_data, val_data, epochs=10):        # Define inside your FaceRecognizer class or before training starts
+    def train(self, train_data, val_data, epochs=10):
         log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1, profile_batch='500,520')
 
