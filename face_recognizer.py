@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Flatten, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications import ResNet50
 import numpy as np
-import scipy, time
+import time
 from tensorflow.keras.callbacks import TensorBoard
 import datetime
 
@@ -15,21 +15,23 @@ class FaceRecognizer:
         self.model = self.build_model(input_shape, self.num_classes)
         self.class_indices = class_indices
 
-    def build_model(self, input_shape, num_classes):
+    @staticmethod
+    def build_model(input_shape, num_classes):
         base_model = ResNet50(weights='imagenet', include_top=False, input_shape=input_shape)
-
-        for layer in base_model.layers:
-            layer.trainable = False
 
         model = Sequential([
             base_model,
             Flatten(),
-            Dense(256, activation='relu'),
-            Dropout(0.2),
+            Dense(512, activation='relu'),
+            Dropout(0.3),
             Dense(num_classes, activation='softmax')
         ])
         model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
         return model
+
+    def save_model(self, path='best_model.keras'):
+        self.model.save(path)
+        print('Model saved.')
 
     def train(self, train_data, val_data, epochs=10):
         log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -52,13 +54,25 @@ class FaceRecognizer:
         end_time = time.time()
         training_time = end_time - start_time
         print(f"Training completed in {training_time:.2f} seconds.")
+        self.save_model()
 
         return history
 
     def predict(self, preprocessed_image):
         prediction = self.model.predict(preprocessed_image)
         predicted_index = np.argmax(prediction, axis=1)[0]
+        print("Prediction output:", prediction)
+
         return predicted_index
 
     def get_class_name(self, index):
-        return self.class_indices.get(index, "Unknown class")
+        try:
+            class_name = self.class_indices.get(index, "Unknown class")
+            return class_name
+        except Exception as e:
+            print(f"Error in getting class name for index {index}: {str(e)}")
+            return "Unknown class"
+
+    def print_classes(self):
+        for c in self.class_indices:
+            print(c)

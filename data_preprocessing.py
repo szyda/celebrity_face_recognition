@@ -1,7 +1,10 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 import face_recognition
-import os, cv2, numpy as np
+import os
+import cv2
+import numpy as np
 from datetime import datetime
+
 
 class DataPreprocessing:
     def __init__(self, data_directory="./data/", image_size=(224, 224), batch_size=32):
@@ -10,14 +13,15 @@ class DataPreprocessing:
         self.batch_size = batch_size
         self.num_classes, self.class_indices = self.get_class_data()
 
-    def initialize_datagen(self, augment=False):
+    @staticmethod
+    def initialize_datagen(augment=True):
         if augment:
             data_gen = ImageDataGenerator(
                 rescale=1./255,
-                rotation_range=20,
-                width_shift_range=0.2,
-                height_shift_range=0.2,
-                shear_range=0.2,
+                rotation_range=30,
+                width_shift_range=0.3,
+                height_shift_range=0.3,
+                shear_range=0.3,
                 horizontal_flip=True,
                 fill_mode='nearest',
                 validation_split=0.2  # 80% training 20% validation
@@ -31,7 +35,7 @@ class DataPreprocessing:
         return data_gen
 
     def load_data(self, subset):
-        data_path = os.path.join(self.data_directory, "processed")
+        data_path = self.data_directory
         datagen = self.initialize_datagen(augment=(subset == 'training'))
 
         return datagen.flow_from_directory(
@@ -43,9 +47,9 @@ class DataPreprocessing:
         )
 
     def get_class_data(self):
-        classes = [d for d in os.listdir(self.data_directory) if os.path.isdir(os.path.join(self.data_directory, d))]
+        classes = [d for d in os.listdir(self.data_directory) if os.path.isdir(os.path.join(self.data_directory, d)) and d != "processed"]
         classes.sort()
-        class_indices = {cls: idx for idx, cls in enumerate(classes)}
+        class_indices = {idx: cls for idx, cls in enumerate(classes)}
 
         return len(classes), class_indices
 
@@ -86,16 +90,9 @@ class DataPreprocessing:
                     face_file_path = os.path.join(output_folder, f"img_{timestamp}.jpg")
                     cv2.imwrite(face_file_path, face_image)
 
-    def detect_faces(self, image):
+    @staticmethod
+    def detect_faces(image):
         face_locations = face_recognition.face_locations(image)
         if face_locations:
             return face_locations[0]
         return None
-
-    # for testing
-    def preprocess_image(self, image_path):
-        img = load_img(image_path, target_size=self.image_size)
-        img_array = img_to_array(img)
-        img_array = np.expand_dims(img_array, axis=0)  # reshaping to (1, height, width, channels)
-        img_array /= 255.0  # normalization
-        return img_array
