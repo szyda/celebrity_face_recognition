@@ -10,7 +10,7 @@ import datetime
 
 
 class FaceRecognizer:
-    def __init__(self, input_shape=(224, 224, 3), num_classes=1, class_indices=None):
+    def __init__(self, input_shape=(224, 224, 3), num_classes=17, class_indices=None):
         self.num_classes = num_classes
         self.model = self.build_model(input_shape, self.num_classes)
         self.class_indices = class_indices
@@ -18,15 +18,16 @@ class FaceRecognizer:
     @staticmethod
     def build_model(input_shape, num_classes):
         base_model = ResNet50(weights='imagenet', include_top=False, input_shape=input_shape)
+        base_model.trainable = False
 
         model = Sequential([
             base_model,
             Flatten(),
-            Dense(512, activation='relu'),
+            Dense(256, activation='relu'),
             Dropout(0.3),
             Dense(num_classes, activation='softmax')
         ])
-        model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
         return model
 
     def save_model(self, path='best_model.keras'):
