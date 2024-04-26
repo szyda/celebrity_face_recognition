@@ -19,10 +19,10 @@ class DataPreprocessing:
             data_gen = ImageDataGenerator(
                 rescale=1./255,
                 rotation_range=30,
-                width_shift_range=0.2,
-                height_shift_range=0.2,
-                shear_range=0.2,
-                zoom_range=0.2,
+                width_shift_range=0.3,
+                height_shift_range=0.3,
+                shear_range=0.3,
+                zoom_range=0.3,
                 horizontal_flip=True,
                 fill_mode='nearest',
                 validation_split=0.3  # 70% training 30% validation
@@ -30,7 +30,7 @@ class DataPreprocessing:
         else:
             data_gen = ImageDataGenerator(
                 rescale=1./255,
-                validation_split=0.2
+                validation_split=0.3
             )
 
         return data_gen

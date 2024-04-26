@@ -18,13 +18,12 @@ class FaceRecognizer:
     @staticmethod
     def build_model(input_shape, num_classes):
         base_model = ResNet50(weights='imagenet', include_top=False, input_shape=input_shape)
-        base_model.trainable = False
 
         model = Sequential([
             base_model,
             Flatten(),
             Dense(256, activation='relu'),
-            Dropout(0.3),
+            Dropout(0.4),
             Dense(num_classes, activation='softmax')
         ])
         model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
