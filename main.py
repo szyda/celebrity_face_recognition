@@ -3,13 +3,12 @@ from data_preprocessing import DataPreprocessing
 from face_recognizer import FaceRecognizer
 from test import run_tests
 
-
 def main():
     data_prep = DataPreprocessing()
     num_classes = data_prep.num_classes
     class_indices = data_prep.class_indices
 
-    print("Number of classes found: {}\n".format(num_classes))
+    # print("Number of classes found: {}\n".format(num_classes))
     # print("Classes found:")
     #
     # for index in class_indices:
@@ -28,13 +27,13 @@ def main():
     val_data = data_prep.get_validation_data()
 
     print("Training the model...")
-    history = face_recognizer.train(train_data=train_data, val_data=val_data, epochs=20)
+    history = face_recognizer.train(train_data=train_data, val_data=val_data, epochs=35)
 
     print("Training completed. Model performance:")
     print(f"Accuracy: {history.history['accuracy'][-1]},\nLoss: {history.history['loss'][-1]}")
 
-    print("Preprocessing test images and detecting faces...")
-    data_prep.crop_faces("./test/", overwrite=True)
+    # print("Preprocessing test images and detecting faces...")
+    # data_prep.crop_faces("./test/", overwrite=False)
 
     print("\nRunning tests...")
     run_tests(face_recognizer)
