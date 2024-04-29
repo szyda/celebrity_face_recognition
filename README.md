@@ -20,6 +20,7 @@ The implementation of the application revolves around several components:
 Our celebrity face recognition model achieved training accuracy of 93% and a validation accuracy of 90%. These metrics were visualized using TensorBoard, providing insights into the model's performance throughout the training process. 
 
 The model was trained on a MacBook Pro 2017, including an Intel i5 processor, 8GB RAM, and Intel HD Graphics 630.
+<br>
 <img src="Screenshot%202024-04-29%20at%2021.33.59.png" width="500">
 
 ## Installation
