@@ -4,11 +4,9 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.models import load_model
 
 
-def run_tests(face_recognizer, model_path='./model.h5'):
-    model = load_model(model_path)
-
+def run_tests(face_recognizer, model_path='./model.keras'):
     test_cases = [
-        ("./test/angelina_jolie.jpg", "Angelina Jolie"),
+        ("./test/angelinajolie.jpg", "Angelina Jolie"),
         ("./test/sandra_bullock.jpg", "Sandra Bullock"),
         ("./test/meganfox.jpg", "Megan Fox"),
         ("./test/jenlawrence.jpg", "Jeniffer Lawrence"),

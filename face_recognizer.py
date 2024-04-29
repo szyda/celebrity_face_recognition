@@ -1,6 +1,7 @@
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Flatten, Dense, Dropout
+from tensorflow.keras.models import load_model
+from tensorflow.keras.layers import GlobalAveragePooling2D, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.callbacks import TensorBoard
@@ -19,15 +20,15 @@ class FaceRecognizer:
     @staticmethod
     def build_model(input_shape, num_classes):
         base_model = ResNet50(weights='imagenet', include_top=False, input_shape=input_shape)
+        model = Sequential()
+        model.add(base_model)
+        model.add(GlobalAveragePooling2D())
+        model.add(Dense(256, activation='relu'))
+        model.add(Dropout(0.3))
+        model.add(Dense(num_classes, activation='softmax'))
 
-        model = Sequential([
-            base_model,
-            Flatten(),
-            Dense(256, activation='relu'),
-            Dropout(0.3),
-            Dense(num_classes, activation='softmax')
-        ])
         model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+
         return model
 
     def train(self, train_data, val_data, epochs=10):
@@ -35,7 +36,7 @@ class FaceRecognizer:
         tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1, profile_batch='500,520')
 
         checkpoint = keras.callbacks.ModelCheckpoint(
-            'model_checkpoint.h5',
+            'model_checkpoint.keras',
             monitor='val_accuracy',
             save_best_only=True,
             verbose=1
@@ -52,17 +53,10 @@ class FaceRecognizer:
         training_time = end_time - start_time
         print(f"Training completed in {training_time:.2f} seconds.")
 
-        self.model.save('model.h5')
-        print("Model saved.")
+        self.model.save_weights('model_weights.h5')
+        print("Model's weights saved.")
 
         return history
-
-    def predict(self, preprocessed_image):
-        prediction = self.model.predict(preprocessed_image)
-        predicted_index = np.argmax(prediction, axis=1)[0]
-        print("Prediction output:", prediction)
-
-        return predicted_index
 
     def get_class_name(self, index):
         class_name = self.class_indices.get(index, "Unknown celebrity")
