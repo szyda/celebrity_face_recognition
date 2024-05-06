@@ -1,6 +1,5 @@
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.models import load_model
 from tensorflow.keras.layers import GlobalAveragePooling2D, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications import ResNet50
@@ -36,9 +35,9 @@ class FaceRecognizer:
         tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1, profile_batch='500,520')
 
         checkpoint = keras.callbacks.ModelCheckpoint(
-            'model_checkpoint.keras',
+            'model_checkpoint.weights.h5',
             monitor='val_accuracy',
-            save_best_only=True,
+            save_weights_only=True,
             verbose=1
         )
         start_time = time.time()
@@ -53,9 +52,6 @@ class FaceRecognizer:
         training_time = end_time - start_time
         print(f"Training completed in {training_time:.2f} seconds.")
 
-        self.model.save_weights('model_weights.h5')
-        print("Model's weights saved.")
-
         return history
 
     def get_class_name(self, index):
@@ -65,3 +61,12 @@ class FaceRecognizer:
     def print_classes(self):
         for c in self.class_indices:
             print(c)
+
+    def load(self):
+        # Ensure the model is built by passing a dummy input through it
+        dummy_input = np.zeros((1, *self.input_shape))
+        _ = self.model.predict(dummy_input)  # this will build the model if not already built
+
+        self.model.load_weights('model_checkpoint.weights.h5')
+        print("Weights are loaded.")
+        return self.model  # Make sure to return the model for further use
